@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String    @unique
+  role      String    @default("USER")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+  comments  Comment[]
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+  location    String
+  assetId     Int?     @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  asset       Image?   @relation("eventImage", fields: [assetId], references: [id])
+}
+
+model Subscriber {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Testimonial {
+  id        Int      @id @default(autoincrement())
+  name      String
+  content   String
+  snapchat  String?
+  instagram String?
+  assetId   Int?     @unique
+  createdAt DateTime @default(now())
+  asset     Image?   @relation("testimonialImage", fields: [assetId], references: [id])
+}
+
+model Booking {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  name       String
+  email      String
+  noOfGuests Int
+  tableNum   Int
+  date       DateTime
+  phone      String
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model Post {
+  id        Int       @id @default(autoincrement())
+  title     String
+  content   String
+  author    String    @default("Admin")
+  assetId   Int?      @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  comments  Comment[]
+  asset     Image?    @relation("postImage", fields: [assetId], references: [id])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  name      String
+  email     String
+  content   String
+  createdAt DateTime @default(now())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+}
+
+model Image {
+  id          Int          @id @default(autoincrement())
+  url         String
+  altText     String
+  width       Int
+  height      Int
+  createdAt   DateTime     @default(now())
+  event       Event?       @relation("eventImage")
+  post        Post?        @relation("postImage")
+  testimonial Testimonial? @relation("testimonialImage")
+}
