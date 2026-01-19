@@ -3,12 +3,12 @@ import { z } from "zod"; // <-- needed to detect ZodError
 import { zValidator } from "@hono/zod-validator";
 import { jwt } from 'hono/jwt'
 import { reservationsSchema, type NewReservation } from "./validation";
-import { getAllReservations, createReservation } from "./services";
+import { getAllReservations, createReservation, updateReservation, deleteReservation } from "./services";
 
 const reservations = new Hono();
 
 reservations.post("/",
-      jwt({ secret: process.env.JWT_SECRET as string }),
+    jwt({ secret: process.env.JWT_SECRET as string }),
     
     zValidator("json", reservationsSchema, (result, c) => {
         if (!result.success) {
@@ -23,11 +23,10 @@ reservations.post("/",
         }
     }),
     async (c) => {
-        const payload = c.get("jwtPayload");
+    const payload = c.get("jwtPayload");
     if (!payload) {
       return c.json({ message: "Unauthorized" }, 401);
     }
-    console.log("JWT Payload:", payload);
         const userId = Number(payload.id);
         const body: NewReservation = await c.req.valid("json");
         const result = await createReservation(userId, body);
@@ -43,6 +42,45 @@ reservations.get("/", async (c) => {
     const reservationsList = await getAllReservations();
     return c.json({ success: true, data: reservationsList });
     
+});
+
+reservations.put("/:id", 
+    jwt({ secret: process.env.JWT_SECRET as string }),
+    zValidator("json", reservationsSchema, (result, c) => {
+        if (!result.success) {
+            const validationError = result.error as z.ZodError<NewReservation>
+            const errorTree = z.treeifyError(validationError)
+            return c.json({ 
+                success: false, 
+                error: "VALIDATION ERROR", 
+                message: "Invalid reservation payload", 
+                data: errorTree 
+            }, 400);
+        }
+    }),
+    
+    async (c) => {
+    const payload = c.get("jwtPayload");
+    if (!payload) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
+    const id = Number(c.req.param("id"));
+    const body: NewReservation = await c.req.valid("json");
+
+    // Implement update logic here
+    const updatedReservation = updateReservation(id, body); // Placeholder for updated reservation
+    return c.json({ success: true, message: `Reservation with id ${id} updated` });
+});
+
+reservations.delete("/:id", async (c) => {
+    jwt({ secret: process.env.JWT_SECRET as string })
+    const payload = c.get("jwtPayload");
+    if (!payload) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
+    const id = Number(c.req.param("id"));
+    await deleteReservation(id);
+    return c.json({ success: true, message: `Reservation with id ${id} deleted` });
 });
 
 export default reservations;

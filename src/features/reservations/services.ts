@@ -13,4 +13,17 @@ import { Reservation, NewReservation } from "./validation";
     return await prisma.booking.findMany();
   }
 
+  export async function deleteReservation (id: number) {
+    await prisma.booking.delete({
+      where: { id }
+    });
+  }
+  export async function updateReservation (id: number, data: NewReservation) {
+    const reservation = await prisma.booking.update({
+      where: { id },
+      data: data
+    });
+    return reservation;
+  } 
+
 
