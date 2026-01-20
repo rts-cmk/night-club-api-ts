@@ -12,6 +12,7 @@ import assets from './features/assets/api';
 import comments from "./features/comments/api";
 import testimonials from "./features/testimonials/api";
 import reservations from "./features/reservations/api";
+import galleryImages from "./features/gallery/api";
 
 // error handling middleware
 import { errorHandler } from "./middleware/errorHandler";
@@ -34,5 +35,6 @@ app.route("reservations", reservations);
 app.route("testimonials", testimonials);
 app.route("subscribers", subscribers);
 app.route("contact-us", message);
+app.route("gallery-images", galleryImages);
 
 export default app;
